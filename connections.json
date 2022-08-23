@@ -1,0 +1,14 @@
+{
+    "serviceProviderConnections": {
+      "AzureCosmosDB": {
+        "displayName": "t20-cosmos-data-conn",
+        "parameterValues": {
+          "connectionString": "@appsetting('CosmosDBConnectionString')"
+        },
+        "serviceProvider": {
+          "id": "/serviceProviders/AzureCosmosDB"
+        }
+      }
+    }
+  }
+  
