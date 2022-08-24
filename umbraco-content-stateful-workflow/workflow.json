@@ -4,7 +4,7 @@
         "actions": {
             "Accepted_Response": {
                 "inputs": {
-                    "statusCode": 201
+                    "statusCode": 202
                 },
                 "kind": "http",
                 "runAfter": {
@@ -20,7 +20,7 @@
                         "containerId": "content",
                         "databaseId": "cricketdata",
                         "isUpsert": true,
-                        "item": "{\n\"data\": @{triggerBody()},\n\"partitionKey\":@{triggerBody()?['ContentType']},\n\"id\": @{triggerBody()?['Key']},\n\"type\": @{triggerBody()?['ContentType']}\n}"
+                        "item": "{\n\"data\": @{triggerBody()},\n\"partitionKey\":\"@{triggerBody()?['ContentType']}\",\n\"id\": \"@{triggerBody()?['Key']}\",\n\"type\": \"@{triggerBody()?['ContentType']}\"\n}"
                     },
                     "serviceProviderConfiguration": {
                         "connectionName": "AzureCosmosDB",
