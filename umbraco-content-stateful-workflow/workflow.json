@@ -4,7 +4,7 @@
         "actions": {
             "Accepted_Response": {
                 "inputs": {
-                    "statusCode": 201
+                    "statusCode": 202
                 },
                 "kind": "http",
                 "runAfter": {
@@ -14,13 +14,28 @@
                 },
                 "type": "Response"
             },
+            "Compose_Content": {
+                "inputs": {
+                    "data": "@triggerBody()",
+                    "id": "@{triggerBody()?['Key']}",
+                    "partitionKey": "@{triggerOutputs()['headers']['ContentType-Alias']}",
+                    "type": "@{triggerOutputs()['headers']['ContentType-Alias']}",
+                    "visible": "@triggerBody()['Published']",
+                    "workflow": {
+                        "id": "@{workflow()['run']['name']}",
+                        "name": "@{workflow()['name']}"
+                    }
+                },
+                "runAfter": {},
+                "type": "Compose"
+            },
             "Create_or_update_Content": {
                 "inputs": {
                     "parameters": {
                         "containerId": "content",
                         "databaseId": "cricketdata",
                         "isUpsert": true,
-                        "item": "{\n\"data\": @{triggerBody()},\n\"partitionKey\":@{triggerBody()?['ContentType']},\n\"id\": @{triggerBody()?['Key']},\n\"type\": @{triggerBody()?['ContentType']}\n}"
+                        "item": "@outputs('Compose_Content')"
                     },
                     "serviceProviderConfiguration": {
                         "connectionName": "AzureCosmosDB",
@@ -28,7 +43,11 @@
                         "serviceProviderId": "/serviceProviders/AzureCosmosDB"
                     }
                 },
-                "runAfter": {},
+                "runAfter": {
+                    "Compose_Content": [
+                        "Succeeded"
+                    ]
+                },
                 "type": "ServiceProvider"
             }
         },
@@ -39,20 +58,20 @@
                 "inputs": {
                     "schema": {
                         "properties": {
-                            "ContentType": {
-                                "type": "string"
-                            },
                             "Key": {
                                 "type": "string"
                             },
-                            "Visible": {
+                            "Published": {
+                                "type": "boolean"
+                            },
+                            "Trashed": {
                                 "type": "boolean"
                             }
                         },
                         "required": [
-                            "ContentType",
                             "Key",
-                            "Visible"
+                            "Published",
+                            "Trashed"
                         ],
                         "type": "object"
                     }
