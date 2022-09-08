@@ -1,0 +1,85 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Accepted_Response": {
+                "inputs": {
+                    "statusCode": 202
+                },
+                "kind": "http",
+                "runAfter": {
+                    "Create_or_update_Content": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Response"
+            },
+            "Compose_Content": {
+                "inputs": {
+                    "data": "@triggerBody()",
+                    "id": "@{triggerBody()?['Key']}",
+                    "partitionKey": "@{triggerOutputs()['headers']['ContentType-Alias']}",
+                    "type": "@{triggerOutputs()['headers']['ContentType-Alias']}",
+                    "visible": "@triggerBody()['Published']",
+                    "workflow": {
+                        "id": "@{workflow()['run']['name']}",
+                        "name": "@{workflow()['name']}"
+                    }
+                },
+                "runAfter": {},
+                "type": "Compose"
+            },
+            "Create_or_update_Content": {
+                "inputs": {
+                    "parameters": {
+                        "containerId": "content",
+                        "databaseId": "cricketdata",
+                        "isUpsert": true,
+                        "item": "@outputs('Compose_Content')"
+                    },
+                    "serviceProviderConfiguration": {
+                        "connectionName": "AzureCosmosDB",
+                        "operationId": "CreateOrUpdateDocument",
+                        "serviceProviderId": "/serviceProviders/AzureCosmosDB"
+                    }
+                },
+                "runAfter": {
+                    "Compose_Content": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ServiceProvider"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "triggers": {
+            "manual": {
+                "inputs": {
+                    "schema": {
+                        "properties": {
+                            "Key": {
+                                "type": "string"
+                            },
+                            "Published": {
+                                "type": "boolean"
+                            },
+                            "Trashed": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "Key",
+                            "Published",
+                            "Trashed"
+                        ],
+                        "type": "object"
+                    }
+                },
+                "kind": "Http",
+                "type": "Request"
+            }
+        }
+    },
+    "kind": "Stateful"
+}
